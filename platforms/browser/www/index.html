@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2016 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+<!--     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+ -->    <!-- Good default declaration:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+        * Enable inline JS: add 'unsafe-inline' to default-src
+        * Enable eval(): add 'unsafe-eval' to default-src
+    * Create your own at http://cspisawesome.com
+    -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+    <link rel="stylesheet" href="css/circle.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+
+    <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="http://code.highcharts.com/highcharts.js"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+    <title>Hello World</title>
+</head>
+
+<body>
+	<div data-role="tabs" id="tabs">
+	<div data-role="navbar">
+	<ul>
+	<li><a href="#one" data-ajax="false">one</a></li>
+	<li><a href="#two" data-ajax="false">Health</a></li>
+	<li><a href="#three" data-ajax="false">three</a></li>
+	</ul>
+	</div>
+
+
+	  <div id="one" class="ui-body-d ui-content">
+	    <h1>First tab contents</h1>
+	  </div>
+	  <div id="two">
+
+		<div id = "wrapper">
+		<div id= "iconH">
+			<i id = "heart" class="material-icons heart2" style="font-size:60px;color:#f44336;">favorite</i>
+		</div>
+		<div id= "infoH">
+			<h1>Heart Rate</h1>
+			<h6 id = "Heart">Acquiring Data from the Sensor</h6>
+		</div>
+		</div>
+		<br>
+
+		<div id="container" style="width: 100%; height: 200px; margin: 0 auto"></div>
+
+
+		<hr>
+		<br>
+		<div id = "wrapper">
+		<div id= "iconH">
+			<i id = "bright" class="material-icons" style="font-size:60px;color:#F57F17;">brightness_high</i>
+		</div>
+		<div id= "infoH">
+			<h1>Brightness</h1>
+ 			<h6 id = "light"></h6>
+
+		</div>
+		</div>
+		<hr>
+		<br>
+		<div id = "wrapper">
+		<div id= "iconH">
+			<i id = "temp" class="material-icons" style="font-size:60px;color:#0277BD;">priority_high</i>
+		</div>
+		<div id= "infoH">
+			<h1>Temperature</h1>
+ 			<h6 id = "temperature">37</h6>
+		</div>
+		</div>
+
+
+	  </div>
+	</div>
+
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+
+    <script type="text/javascript">
+    	var heartHost = document.getElementById("Heart");
+    	var lightHost = document.getElementById("light");
+
+        app.initialize();
+        var heartrate = 0;
+        var light = 0;
+        var prox = 0;
+        var myFirebaseRef = new Firebase("https://androidwearheartrate.firebaseio.com/");
+
+        myFirebaseRef.child("InformationSet/heartProxLight").on("value", function(snapshot) {
+        	heartrate = parseInt(snapshot.val()[0]);
+        	prox = parseInt(snapshot.val()[1]);
+        	light = snapshot.val()[2];
+        	lightHost.innerHTML = "Preceived Brightness:" + light + " Lux";
+
+        	if (heartrate > 0){
+  				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
+  			}else{
+  				heartHost.innerHTML = "Acquiring Data from the Sensor";  
+  			}
+
+  			if (heartrate > 120){
+  				$("#heart").pulse({times: 2, duration: 1000});
+  			}
+
+  			if (light > 500){
+  				$('#bright').pulse({times: 2, duration: 1000});
+  			}
+
+  
+  			if (heartrate > 120){
+  				$("#temp").pulse({times: 2, duration: 1000});
+  			}
+		});
+
+		$.fn.pulse = function(options) {
+
+		    var options = $.extend({
+		        times: 3,
+		        duration: 1000
+		    }, options);
+
+		    var period = function(callback) {
+		        $(this).animate({opacity: 0}, options.duration, function() {
+		            $(this).animate({opacity: 1}, options.duration, callback);
+		        });
+		    };
+		    return this.each(function() {
+		        var i = +options.times, self = this,
+		        repeat = function() { --i && period.call(self, repeat) };
+		        period.call(this, repeat);
+		    });
+		};
+
+		var cw = $('#MydivHR').width();
+		$('#MydivHR').css({'height':cw+'px'});
+		$('#MydivHR').css({'border-radius':cw+'px'});
+
+		$('#MydivProx').css({'height':cw+'px'});
+		$('#MydivProx').css({'border-radius':cw+'px'});
+
+		$('#MydivLight').css({'height':cw+'px'});
+		$('#MydivLight').css({'border-radius':cw+'px'});
+
+		$(function () {
+		    $(document).ready(function() {
+		        Highcharts.setOptions({
+		            global: {
+		                useUTC: false
+		            }
+		        });
+		    
+		        var chart;
+		        $('#container').highcharts({
+		            chart: {
+		                type: 'line',
+		                backgroundColor: '#FFFFFF',
+		                animation: Highcharts.svg, // don't animate in old IE
+		                marginRight: 10,
+		                events: {
+		                    load: function() {
+		    	                var series = this.series[0];
+		                        setInterval(function() {
+		                            var x = (new Date()).getTime(), // current time
+		                                y = heartrate;
+		                            series.addPoint([x, y], true, true);
+		                        }, 1500);
+		                    }
+		                }
+		            },
+		            title: {
+		                text: ''
+		            },
+		            xAxis: {
+		                type: 'datetime',
+		                tickPixelInterval: 150
+		            },
+		            yAxis: {
+		                title: {
+		                    text: 'BMP'
+		                },
+		                plotLines: [{
+		                    value: 0,
+		                    width: 1,
+		                    color: '#808080'
+		                }]
+		            },
+		            tooltip: {
+		                formatter: function() {
+		                        return '<b>'+ this.series.name +'</b><br/>'+
+		                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+		                        Highcharts.numberFormat(this.y, 2);
+		                }
+		            },
+		            legend: {
+		                enabled: false
+		            },
+		            exporting: {
+		                enabled: false
+		            },
+		            series: [{
+		                name: 'Heart Rate',
+		                data: (function() {
+		                    var data = [],time = (new Date()).getTime(),i;
+		                    for (i = -19; i <= 0; i++) {
+		                        data.push({x: time + i * 1000,heartrate});
+		                    }
+		                    return data;
+		                })()
+		            }]
+		        });
+		    });
+		    
+		});
+
+    </script>
+</body>
+
+</html>
