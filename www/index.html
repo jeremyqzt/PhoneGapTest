@@ -103,7 +103,7 @@
 		</div>
 		<div id= "infoH">
 			<h1>Temperature</h1>
- 			<h6 id = "temperature">37</h6>
+ 			<h6 id = "Temperature">37</h6>
 		</div>
 		</div>
 
@@ -117,6 +117,7 @@
     <script type="text/javascript">
     	var heartHost = document.getElementById("Heart");
     	var lightHost = document.getElementById("light");
+    	var temperatureHost = document.getElementById("Temperature");
 
         app.initialize();
         var heartrate = 0;
@@ -126,11 +127,11 @@
 
         myFirebaseRef.child("InformationSet/heartProxLight").on("value", function(snapshot) {
         	heartrate = parseInt(snapshot.val()[0]);
-        	prox = parseInt(snapshot.val()[1]);
+        	temp = parseInt(snapshot.val()[3]);
         	light = snapshot.val()[2];
 
-        	lightHost.innerHTML = "Preceived Brightness:" + light + " Lux";
-
+        	lightHost.innerHTML = "Preceived Brightness: " + light + " Lux";
+        	temperatureHost.innerHTML = "Ambient Temperature: " + temp + " C"
         	if (heartrate > 0){
   				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
   			}else{
@@ -146,7 +147,7 @@
   			}
 
   
-  			if (heartrate > 120){
+  			if (temp > 40 || temp <10){
   				$("#temp").pulse({times: 1, duration: 300});
   			}
 		});
