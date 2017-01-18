@@ -128,6 +128,7 @@
         	heartrate = parseInt(snapshot.val()[0]);
         	prox = parseInt(snapshot.val()[1]);
         	light = snapshot.val()[2];
+
         	lightHost.innerHTML = "Preceived Brightness:" + light + " Lux";
 
         	if (heartrate > 0){
@@ -137,16 +138,16 @@
   			}
 
   			if (heartrate > 120){
-  				$("#heart").pulse({times: 2, duration: 1000});
+  				$("#heart").pulse({times: 1, duration: 300});
   			}
 
   			if (light > 500){
-  				$('#bright').pulse({times: 2, duration: 1000});
+  				$('#bright').pulse({times: 1, duration: 300});
   			}
 
   
   			if (heartrate > 120){
-  				$("#temp").pulse({times: 2, duration: 1000});
+  				$("#temp").pulse({times: 1, duration: 300});
   			}
 		});
 
