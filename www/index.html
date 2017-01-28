@@ -37,6 +37,7 @@
     * Create your own at http://cspisawesome.com
     -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+
     <link rel="stylesheet" href="css/circle.css">
     <link rel="stylesheet" type="text/css" href="css/index.css" />
 
@@ -47,8 +48,9 @@
 	<script src="http://code.highcharts.com/highcharts.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
-<script src="http://code.highcharts.com/modules/exporting.js"></script>
+	<script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     <title>Hello World</title>
 </head>
@@ -59,7 +61,7 @@
 	<ul>
 	<li><a href="#one" data-ajax="false">one</a></li>
 	<li><a href="#two" data-ajax="false">Health</a></li>
-	<li><a href="#three" data-ajax="false">three</a></li>
+	<li><a href="#three" data-ajax="false">Vehicle</a></li>
 	</ul>
 	</div>
 
@@ -67,6 +69,7 @@
 	  <div id="one" class="ui-body-d ui-content">
 	    <h1>First tab contents</h1>
 	  </div>
+
 	  <div id="two">
 
 		<div id = "wrapper">
@@ -109,6 +112,64 @@
 
 
 	  </div>
+
+		<div id = "three" class = "ui-body-d ui-content">
+
+
+
+			<div id = "Bigwrapper">
+
+	       		<div id="speed_div"></div>
+				<div id= "info3">
+					<h1>Speed</h1>
+					<h6 id = "speed">60 KMPH</h6>
+				</div>
+			</div>
+
+			<hr>
+
+
+			<div id = "Bigwrapper">
+
+	       		<div id="acc_div"></div>
+				<div id= "info3">
+					<h1>Acceleration</h1>
+					<h6 id = "acc">60 KMPH</h6>
+				</div>
+			</div>
+
+
+       		<hr>
+			<h2>Vehicle Status</h2>
+
+       		<div id = "brakeDiv">
+			<i id = "brake" class="material-icons heart2" style="font-size:60px;color:#689F38;">directions_car</i>
+			<br>
+			<p id="brakeD">Braking</p>
+			</div>
+
+			<div id = "climateDiv">
+			<i id = "climate" class="material-icons heart2" style="font-size:60px;color:#F57F17;">format_align_left</i>
+			<br>
+			<p id="climateD">Climate On</p>
+			</div>
+
+
+			<div id = "roadDiv">
+			<i id = "road" class="material-icons heart2" style="font-size:60px;color:#827717;">map</i>
+			<br>
+			<p id = "roadD">Highway</p>
+			</div>
+
+			<div id = "wiperDiv">
+			<i id = "wiper" class="material-icons heart2" style="font-size:60px;color:#4FC3F7;">grain</i>
+			<br>
+			<p id="wiperD">Weather</p>
+			</div>
+
+
+
+		</div>
 	</div>
 
     <script type="text/javascript" src="cordova.js"></script>
@@ -118,6 +179,7 @@
     	var heartHost = document.getElementById("Heart");
     	var lightHost = document.getElementById("light");
     	var temperatureHost = document.getElementById("Temperature");
+    	var speedHost = document.getElementById("speed");
 
         app.initialize();
         var heartrate = 0;
@@ -194,13 +256,13 @@
 		            chart: {
 		                type: 'line',
 		                backgroundColor: '#FFFFFF',
-		                animation: Highcharts.svg, // don't animate in old IE
+		                animation: Highcharts.svg, 
 		                marginRight: 10,
 		                events: {
 		                    load: function() {
 		    	                var series = this.series[0];
 		                        setInterval(function() {
-		                            var x = (new Date()).getTime(), // current time
+		                            var x = (new Date()).getTime(), 
 		                                y = heartrate;
 		                            series.addPoint([x, y], true, true);
 		                        }, 1500);
@@ -251,7 +313,107 @@
 		    });
 		    
 		});
+		var carSpeed;
+		var carAcc;
 
+        myFirebaseRef.child("Vehicle/Speed").on("value", function(snapshot) {
+        	speedHost.innerHTML = "Speed: " + snapshot.val() +"KM/Hour";
+        	carSpeed = snapshot.val();
+		});
+
+		myFirebaseRef.child("Vehicle/Acceleration").on("value", function(snapshot) {
+        	document.getElementById("acc").innerHTML = "Acceleration: " + snapshot.val() +"KM<sup>2</sup>/Hour";
+        	carAcc = snapshot.val();
+		});
+
+
+		myFirebaseRef.child("Vehicle/Braking").on("value", function(snapshot) {
+        	if (snapshot.val() == 1){
+        		document.getElementById("brakeD").innerHTML = "Braking";
+				document.getElementById("brake").style.color = "#689F38"
+        	} else{
+        		document.getElementById("brakeD").innerHTML = "Accelerating";
+				document.getElementById("brake").style.color = "#B0BEC5"
+        	}
+		});
+
+		myFirebaseRef.child("Vehicle/Roadtype").on("value", function(snapshot) {
+        	if (snapshot.val() == 1){
+        		document.getElementById("roadD").innerHTML = "Highway";
+				document.getElementById("road").style.color = "#263238"
+        	} else{
+        		document.getElementById("roadD").innerHTML = "Local Roads";
+				document.getElementById("road").style.color = "#9E9D24"
+        	}
+		});
+
+		myFirebaseRef.child("Vehicle/Wiper").on("value", function(snapshot) {
+        	if (snapshot.val() == 1){
+        		document.getElementById("wiperD").innerHTML = "Weather Conditions";
+				document.getElementById("wiper").style.color = "#4FC3F7"
+        	} else{
+        		document.getElementById("wiperD").innerHTML = "Clear";
+				document.getElementById("wiper").style.color = "#424242"
+        	}
+		});
+
+		myFirebaseRef.child("Vehicle/Climate").on("value", function(snapshot) {
+        	if (snapshot.val() == 1){
+        		document.getElementById("climateD").innerHTML = "Climate On";
+				document.getElementById("climate").style.color = "#F57F17"
+        	} else{
+        		document.getElementById("climateD").innerHTML = "Climate Off";
+				document.getElementById("climate").style.color = "#424242"
+        	}
+		});
+
+
+      google.charts.load('current', {'packages':['gauge']});
+
+      google.charts.setOnLoadCallback(drawChart);
+      google.charts.setOnLoadCallback(drawChart2);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Speed', 0],
+        ]);
+        var options = {
+          max: 220, min: 0,
+          width: 120, height: 120,
+          redFrom: 200, redTo: 220,
+          yellowFrom: 130, yellowTo: 200,
+          minorTicks: 10
+        };
+        var chart = new google.visualization.Gauge(document.getElementById('speed_div'));
+        chart.draw(data, options);
+        setInterval(function() {
+          data.setValue(0, 1, carSpeed);
+          chart.draw(data, options);
+        }, 500);
+      }
+
+
+
+     function drawChart2() {
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Acceleration', 0],
+        ]);
+        var options = {
+          max: 30, min: 0,
+          width: 120, height: 120,
+          redFrom: 25, redTo: 30,
+          yellowFrom: 15, yellowTo: 25,
+          minorTicks: 1
+        };
+        var chart = new google.visualization.Gauge(document.getElementById('acc_div'));
+        chart.draw(data, options);
+        setInterval(function() {
+          data.setValue(0, 1, carAcc);
+          chart.draw(data, options);
+        }, 500);
+      }
     </script>
 </body>
 
