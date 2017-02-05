@@ -231,6 +231,7 @@
     	var vehHost = document.getElementById("veh");
     	var status = document.getElementById("lower");
     	var ind = document.getElementById("indicate");
+		var carSpeed = 0;
 
     	function moveProgress(x, host){
     		//console.log(parseInt(host.style.width));
@@ -421,7 +422,7 @@
 			}
 
 			//Abnormal Light
-			if ((light < 50) & (watchLight < 50)){
+			if ((light < 100) & (watchLight < 50)){
 				lower.innerHTML = "Brightness: Low";
 				warnHost.innerHTML = "Blink has detected low brightness, its easy to fall asleep with this much light";
 				ind.style.backgroundColor = "#F9A825";		
@@ -436,7 +437,7 @@
 			}
 
 			//proximity
-			if ((prox < 3) & (speed > 10)){
+			if ((prox < 3) & (carSpeed > 10)){
 				lower.innerHTML = "Operation";
 				warnHost.innerHTML = "Please do not operating while driving";
 				ind.style.backgroundColor = "#F9A825";
@@ -486,8 +487,9 @@
 
 		});
 
-		myFirebaseRef.child("Vehicle/watchLight").on("value", function(snapshot) {
+		myFirebaseRef.child("InformationSet/watchLight").on("value", function(snapshot) {
         	watchLight = snapshot.val();
+        	console.log(watchLight);
 		});
 
 
@@ -654,7 +656,6 @@
 		    });
 		    
 		});
-		var carSpeed;
 		var carAcc;
 
         myFirebaseRef.child("Vehicle/Speed").on("value", function(snapshot) {

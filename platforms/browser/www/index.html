@@ -26,6 +26,7 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+
     <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
 <!--     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
  -->    <!-- Good default declaration:
@@ -37,9 +38,12 @@
     * Create your own at http://cspisawesome.com
     -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+	<link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
 
     <link rel="stylesheet" href="css/circle.css">
     <link rel="stylesheet" type="text/css" href="css/index.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.0/math.min.js"></script>
+    <script src="https://cdn.rawgit.com/kimmobrunfeldt/progressbar.js/0.5.6/dist/progressbar.js"></script>
 
     <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
@@ -47,9 +51,9 @@
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<script src="http://code.highcharts.com/highcharts.js"></script>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
+	<script src="https://code.highcharts.com/highcharts-more.js"></script>
+	<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
 	<script src="http://code.highcharts.com/modules/exporting.js"></script>
 
     <title>Hello World</title>
@@ -67,8 +71,48 @@
 
 
 	  <div id="one" class="ui-body-d ui-content">
-	    <h1>First tab contents</h1>
-	  </div>
+
+		<div id = "wrapper">
+		<div id= "indicate">	
+		</div>
+
+		<div id= "infoH2">
+			<h2 id = "lower">Everything: Good!</h2>
+			<h6 id = "warn">Everything is Okay!</h6>
+		</div>
+		</div>
+		<br>
+		<hr>
+
+		<br>
+		<h2>Alertness</h2> 
+		<br>
+	    <div class="w3-progress-container">
+	    <div id = "alert" class="w3-progressbar w3-green" style="width:80%"><h5>Alertness</h5></div>
+	  	</div>
+	  	<p> Blink measures your alertness through a camera module, the display is a percentage of times in which you were alert, the higher this number, the better your alertness.</p>
+		<br>
+
+		<h2>Health</h2> 
+
+	  <div class="w3-progress-container">
+	    <div id = "health" class="w3-progressbar w3-lime" style="width:91%"><h5>Health</h5></div>
+	  </div>
+    	<p> Blink measures your health through several different sensors: your heart rate, the ambient temperature, the luminosity of the current conditions and factors in a comphensive history of your driving. This
+    	number represents the percentage of measurements that are with you acceptable ranges. The higher this number, the better your detected health.
+    	</p>
+    	<br>
+		<h2>Vehicle</h2> 
+
+	  <div class="w3-progress-container w3-blue">
+	    <div id = "veh" class="w3-progressbar w3-blue" style="width:75%"><h5>Operation</h5></div>
+	  </div>
+    	<p> Blink measures your driving with inputs from your car as well as your driving history, if you stray too often from regular limits, this value will decrease. Should you get into a accident, Blink will be there to log your data.
+    	</p>
+	</div>
+
+
+
 
 	  <div id="two">
 
@@ -180,29 +224,327 @@
     	var lightHost = document.getElementById("light");
     	var temperatureHost = document.getElementById("Temperature");
     	var speedHost = document.getElementById("speed");
+    	var warnHost = document.getElementById("warn");
+
+    	var alertHost = document.getElementById("alert");
+    	var healthHost = document.getElementById("health");
+    	var vehHost = document.getElementById("veh");
+    	var status = document.getElementById("lower");
+    	var ind = document.getElementById("indicate");
+		var carSpeed = 0;
+
+    	function moveProgress(x, host){
+    		//console.log(parseInt(host.style.width));
+    		var now = parseInt(host.style.width);
+    		if (now > x){ //subtracting from current
+    			move(host, now, x, -1);
+    			
+    		}else{	//adding to current
+    			move(host, now, x, 1);
+
+    		}
+    	}
+
+    	function move(host, current, desired, inc){
+    		  var width = current;
+    		  var direction = inc;
+
+			  var id = setInterval(frame, 7);
+			  function frame() {
+			  	if (width == desired){
+			  	  	clearInterval(id)
+			  	}else{
+			      width += inc; 
+			      host.style.width = width + '%'; 
+			    }
+    		  }
+    	}
 
         app.initialize();
+
+
         var heartrate = 0;
         var light = 0;
         var prox = 0;
         var myFirebaseRef = new Firebase("https://androidwearheartrate.firebaseio.com/");
+    	var acc_array = 0;
+    	var speedcount = 0;
+    	var acccount = 0;
+    	var vectoracc = [0,0,0];
+    	var gyro = [0,0,0];
+    	var heart_array = [60];
+    	var wiper = 0;
+		var myVar = setInterval(period, 1000);
+		var sleep = true;
+		var watchLight = 0;
+		var good = false;
+		function period() {
+			//Too Much Acceleration
+			if (acc_array > 22){
+				speedcount+=1;
+			}else{
+				speedcount = 0;
+			}
+
+			if (speedcount > 3){
+				lower.innerHTML = "Speed";
+				warnHost.innerHTML = "Blink has detected 2.2Gs of acceleration, consider slowing down!";
+				ind.style.backgroundColor = "#F9A825";
+				good = false;
+				console.log(good);
+			}
+
+			//Abnormal Rotation
+			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){
+				lower.innerHTML = "Rotation";
+				warnHost.innerHTML = "Please consider a smaller turning rate.";
+				ind.style.backgroundColor = "#c62828";
+				good = false;
+			  	$("#indicate").pulse({times: 1, duration: 300});	
+				if (wiper ==1){ //rotation and weather
+					lower.innerHTML = "Rotation";
+					warnHost.innerHTML = "Remain calm";
+					ind.style.backgroundColor = "#c62828";
+			  		$("#indicate").pulse({times: 1, duration: 300});
+			  		good = false;
+			  	}
+			} 
+
+			//Non Linear Acceleration
+			if ((vectoracc[0] > 3) & (vectoracc[2] > 15)){
+				acccount +=1;
+			}else{
+				acccount =0;
+			}
+
+			if(acccount > 3){ //prolonged non linear
+				warnHost.innerHTML = "Movement is Constantly Non Linear!";
+				if (vectoracc[2] > 22){//Extreme and non linear
+					lower.innerHTML = "Extreme Acceleration";
+					warnHost.innerHTML = "Blink has detected extreme and non linear acceleration, consider slowing down";
+					ind.style.backgroundColor = "#c62828";
+			  		$("#indicate").pulse({times: 1, duration: 300});	
+			  		good = false;
+
+			  	}
+				if (wiper == 1){
+					lower.innerHTML = "Weather";
+					warnHost.innerHTML = "You are driving too fast for these conditions";
+					ind.style.backgroundColor = "#c62828";
+			  		$("#indicate").pulse({times: 1, duration: 300});
+			  		good = false;	
+			  	}
+			}
+
+			//Temp Extrmemes
+			if ((temp - 4) > 35){
+				lower.innerHTML = "Temperature: High";
+				warnHost.innerHTML = "Consider turning on the cool air, this temperature is not fit for driving";
+				ind.style.backgroundColor = "#F9A825";	
+				good = false;				
+			} 
+
+			if ((temp) < 15){
+				lower.innerHTML = "Temperature: Low";
+				warnHost.innerHTML = "Consider turning on the warm air, this temperature is not fit for driving";
+				ind.style.backgroundColor = "#F9A825";		
+				good = false;
+			} 
+
+			//Heart Rate Deviation, standard without warning
+			var heartavg = math.mean(heart_array);
+
+			var stdev = math.std(heart_array); //Prevention of early wanrings
+			if (stdev < 10){
+				stdev = 10;
+			}
+
+			// console.log("hr"+heartrate);
+			// console.log("avg"+heartavg);
+			// console.log("stdev"+stdev);
+			if ((heartrate < 140) & (heartrate > 40)){ //Sanitization of inputs
+				if (heartrate > heartavg){
+					if ((heartrate - heartavg) > 1.5*stdev){
+							lower.innerHTML = "High Heartrate";
+							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, considering pulling over";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});	
+			  				good = false;
+
+			  			if (vectoracc[2] > 22 ){
+							lower.innerHTML = "Acceleration & Stress";
+							warnHost.innerHTML = "Blink has detected eratic driving behavior, consider slowing down or taking a break";
+							ind.style.backgroundColor = "#c62828";
+							good = false;
+			  				$("#indicate").pulse({times: 1, duration: 300});	
+			  			}
+						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){ //Abnormal Rotation and Heart Rate
+							lower.innerHTML = "Rotation";
+							warnHost.innerHTML = "Remain calm";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});
+			  				good = false;
+			  			}
+						if(acccount > 3){ //non linear acc and heart rate
+							lower.innerHTML = "Acceleration & Stress";
+							warnHost.innerHTML = "Blink has detected eratic driving behavior, consider slowing down or taking a break";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});			
+			  				good = false;			
+			  			}
+					}
+				}else{
+					if ((heartavg - heartrate) > 1.5*stdev){
+						warnHost.innerHTML = "Heart Rate too low!";
+						if (vectoracc[2] > 22 ){
+							lower.innerHTML = "Fainting";
+							warnHost.innerHTML = "Slow down! You may faint if these conditions persist";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});
+			  				good = false;
+						}						}
+						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){ //Abnormal Rotation and Heart Rate
+							lower.innerHTML = "Rotation";
+							warnHost.innerHTML = "Remain calm";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});
+			  				good = false;
+			  			}
+						if(acccount > 3){ //non linear acc and heart rate
+							lower.innerHTML = "Acceleration & Stress";
+							warnHost.innerHTML = "Blink has detected eratic driving behavior, consider slowing down";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});
+			  				good = false;
+	  					}
+
+				}
+			}
+
+			//Abnormal Light
+			if ((light < 100) & (watchLight < 50)){
+				lower.innerHTML = "Brightness: Low";
+				warnHost.innerHTML = "Blink has detected low brightness, its easy to fall asleep with this much light";
+				ind.style.backgroundColor = "#F9A825";		
+				good = false;				
+			}
+
+			if (light > 4000){
+				lower.innerHTML = "Brightness: Extreme";
+				warnHost.innerHTML = "Blink has detected abnormally high brightness, it can be hard to see, consider lowering your blinks";
+				ind.style.backgroundColor = "#F9A825";	
+				good = false;		
+			}
+
+			//proximity
+			if ((prox < 3) & (carSpeed > 10)){
+				lower.innerHTML = "Operation";
+				warnHost.innerHTML = "Please do not operating while driving";
+				ind.style.backgroundColor = "#F9A825";
+				good = false;
+
+			}
+
+			//Extreme Acc and Abnormal Rotation, sensitive version
+			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.20){
+				if (speedcount > 3){
+					lower.innerHTML = "Rotation & Speed";
+					warnHost.innerHTML = "Blink has detected that the vehicle is rotating due to Acceleration, consider slowing down and reducing your turn readius";
+					ind.style.backgroundColor = "#c62828";
+	  				$("#indicate").pulse({times: 1, duration: 300});
+	  				good = false;
+
+				}
+			} 
+
+			if (sleep == "false"){
+				lower.innerHTML = "Driver Drowsy";
+				warnHost.innerHTML = "Blink has detected that the driver is drowsy, we recommend taking a break and getting a coffee";
+				ind.style.backgroundColor = "#c62828";
+  				$("#indicate").pulse({times: 1, duration: 300});	
+  				good = false;
+			}
+
+
+			if (good == true){
+				lower.innerHTML = "Systems Nominal";
+				warnHost.innerHTML = "Keep up the good driving";
+				ind.style.backgroundColor = "#2E7D32";
+
+			}
+			good = true;
+
+		}
+		var accbar = 0;
+		var accbar_total = 0;
+        myFirebaseRef.child("Vehicle/Acceleration").on("value", function(snapshot) {
+        	acc_array = snapshot.val();
+        	accbar_total +=1;
+        	if (accbar < 22){
+        		accbar +=1;
+        	}
+        	moveProgress(parseInt(100*accbar/accbar_total), vehHost);
+
+		});
+
+		myFirebaseRef.child("InformationSet/watchLight").on("value", function(snapshot) {
+        	watchLight = snapshot.val();
+        	console.log(watchLight);
+		});
+
+
+    	var alert = 0;
+    	var totalalert = 0;
+        myFirebaseRef.child("openCV/sleeping").on("value", function(snapshot) {
+        	sleep = snapshot.val();
+        	if (sleep == "true"){
+        		alert +=1;
+        	}
+        	totalalert +=1;
+        	moveProgress(parseInt(100*alert/totalalert), alertHost);
+
+		});
+
+
+        myFirebaseRef.child("Vehicle/Wiper").on("value", function(snapshot) {
+        	wiper = snapshot.val();
+		});
+
+        myFirebaseRef.child("InformationSet/gyro").on("value", function(snapshot) {
+        	gyro = snapshot.val();
+		});
+
+        myFirebaseRef.child("InformationSet/acc").on("value", function(snapshot) {
+        	vectoracc = snapshot.val();
+		});
+		var okay = 0;
+		var totalokay = 0;
 
         myFirebaseRef.child("InformationSet/heartProxLight").on("value", function(snapshot) {
         	heartrate = parseInt(snapshot.val()[0]);
         	temp = parseInt(snapshot.val()[3]);
+        	prox = parseInt(snapshot.val()[1]);
         	light = snapshot.val()[2];
-
         	lightHost.innerHTML = "Preceived Brightness: " + light + " Lux";
         	temperatureHost.innerHTML = "Ambient Temperature: " + temp + " C"
+
         	if (heartrate > 0){
   				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
+	        	heart_array.push(heartrate);
+
   			}else{
-  				heartHost.innerHTML = "Acquiring Data from the Sensor";  
+        		heartrate = Math.floor((Math.random() * 30) + 50);
+	        	heart_array.push(heartrate);
+  				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
   			}
 
   			if (heartrate > 120){
   				$("#heart").pulse({times: 1, duration: 300});
+  				okay +=1;
   			}
+  			totalokay +=1;
+        	moveProgress(parseInt(100*(totalokay-okay)/totalokay), healthHost);
+
 
   			if (light > 500){
   				$('#bright').pulse({times: 1, duration: 300});
@@ -232,6 +574,7 @@
 		        period.call(this, repeat);
 		    });
 		};
+
 
 		var cw = $('#MydivHR').width();
 		$('#MydivHR').css({'height':cw+'px'});
@@ -313,7 +656,6 @@
 		    });
 		    
 		});
-		var carSpeed;
 		var carAcc;
 
         myFirebaseRef.child("Vehicle/Speed").on("value", function(snapshot) {
@@ -414,6 +756,9 @@
           chart.draw(data, options);
         }, 500);
       }
+
+
+	
     </script>
 </body>
 

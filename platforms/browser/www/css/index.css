@@ -19,7 +19,27 @@
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
-
+progress[value]{width:300px;height:50px;border:1px solid #ccc;border-radius:2px;margin:100px 0;color:#fff;
+    background: -moz-linear-gradient(left, #0057a9 0%, #0057a9 19%, transparent 19%, transparent 21%, #79ce00 21%, #79ce00 39%, transparent 39%, transparent 41%, #fcff00 41%, #fcff00 59%, transparent 39%, transparent 41%, #fcff00 41%, #fcff00 59%, transparent 59%, transparent 61%, #ffb750 61%, #ffb750 79%, transparent 79%, transparent 81%, #ff0000 81%, #ff0000 100%);
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,#0057a9), color-stop(19%,#0057a9), color-stop(19%,transparent), color-stop(21%,transparent), color-stop(21%,#79ce00), color-stop(39%,#79ce00), color-stop(39%,transparent), color-stop(41%,transparent), color-stop(41%,#fcff00), color-stop(59%,#fcff00), color-stop(39%,transparent), color-stop(41%,transparent), color-stop(41%,#fcff00), color-stop(59%,#fcff00), color-stop(59%,transparent), color-stop(61%,transparent), color-stop(61%,#ffb750), color-stop(79%,#ffb750), color-stop(79%,transparent), color-stop(81%,transparent), color-stop(81%,#ff0000), color-stop(100%,#ff0000));
+    background: -webkit-linear-gradient(left, #0057a9 0%,#0057a9 19%,transparent 19%,transparent 21%,#79ce00 21%,#79ce00 39%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 59%,transparent 61%,#ffb750 61%,#ffb750 79%,transparent 79%,transparent 81%,#ff0000 81%,#ff0000 100%);
+    background: -o-linear-gradient(left, #0057a9 0%,#0057a9 19%,transparent 19%,transparent 21%,#79ce00 21%,#79ce00 39%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 59%,transparent 61%,#ffb750 61%,#ffb750 79%,transparent 79%,transparent 81%,#ff0000 81%,#ff0000 100%);
+    background: -ms-linear-gradient(left, #0057a9 0%,#0057a9 19%,transparent 19%,transparent 21%,#79ce00 21%,#79ce00 39%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 59%,transparent 61%,#ffb750 61%,#ffb750 79%,transparent 79%,transparent 81%,#ff0000 81%,#ff0000 100%);
+    background: linear-gradient(to right, #0057a9 0%,#0057a9 19%,transparent 19%,transparent 21%,#79ce00 21%,#79ce00 39%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 39%,transparent 41%,#fcff00 41%,#fcff00 59%,transparent 59%,transparent 61%,#ffb750 61%,#ffb750 79%,transparent 79%,transparent 81%,#ff0000 81%,#ff0000 100%);
+    -webkit-transform:rotate(180deg);
+    -ms-transform:rotate(180deg);
+    transform:rotate(180deg);
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
+}
+progress[value]::-webkit-progress-bar{background-color:transparent;position:relative;}
+progress[value]::-webkit-progress-value{width:100%;background-color:#fff;background-size:100%;position:relative;overflow:hidden;
+     -webkit-transition:width 0.6s ease;
+    -moz-transition:width 0.6s ease;
+    -o-transition:width 0.6s ease;
+    transition:width 0.6s ease;
+}
 body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
@@ -79,10 +99,6 @@ h1 {
     text-align:left;
     text-decoration: underline overline;
 
-}
-h2{
-    padding-top: 0px;
-    margin-top: 0px;
 }
 
 p{
@@ -178,6 +194,14 @@ span{
     height : 70px;
     width: 65%;
 }
+#infoH2{
+    text-align: top;
+    margin: 0px;
+    display: inline-block;
+    position: relative;
+    height : 70px;
+    width: 65%;
+}
 #icon3, #speed_div, #acc_div{
     margin: 0px;
     display: inline-block;
@@ -185,6 +209,13 @@ span{
     width: 120px;
 }
 
+h5{
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+    font-size: 20px;
+    color: #FFFFFF;
+}
 #info3{
     margin: 0px;
     display: inline-block;
@@ -215,7 +246,9 @@ span{
     100% {-webkit-transform: scale(1.2, 1.2); opacity: 0.0;}
 }
 
-
+#one{
+    text-align: left;
+}
     
 hr {
   height: 1px;
@@ -253,6 +286,7 @@ hr:after {
 
 
 
+
 #brakeDiv, #roadDiv, #climateDiv, #wiperDiv{
     display: inline-block;
     width:23.5%;
@@ -263,4 +297,30 @@ hr:after {
 #brakeDiv, #roadDiv, #climateDiv{
     border-right-width: 1px;
     border-right-style: solid;
+}
+
+#canvas-container {
+   width: 100%;
+   text-align:center;
+}
+
+canvas {
+   display: inline;
+}
+
+
+h2 {  color: #000000; font-family: 'Trocchi', serif; font-size: 25px; font-weight: normal; line-height: 48px; margin: 0; }
+
+#indicate{
+    border-radius: 75px;
+    border: solid 5px;
+    margin: 0px;
+    display: inline-block;
+    width: 75px;
+    height: 75px;
+    background-color: #2E7D32;
+}
+
+#lower{
+    font-size: 18px;
 }
