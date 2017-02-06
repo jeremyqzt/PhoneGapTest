@@ -63,7 +63,7 @@
 	<div data-role="tabs" id="tabs">
 	<div data-role="navbar">
 	<ul>
-	<li><a href="#one" data-ajax="false">one</a></li>
+	<li><a href="#one" data-ajax="false">Summary</a></li>
 	<li><a href="#two" data-ajax="false">Health</a></li>
 	<li><a href="#three" data-ajax="false">Vehicle</a></li>
 	</ul>
@@ -295,7 +295,7 @@
 			}
 
 			//Abnormal Rotation
-			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){
+			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){
 				lower.innerHTML = "Rotation";
 				warnHost.innerHTML = "Please consider a smaller turning rate.";
 				ind.style.backgroundColor = "#c62828";
@@ -378,7 +378,7 @@
 							good = false;
 			  				$("#indicate").pulse({times: 1, duration: 300});	
 			  			}
-						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){ //Abnormal Rotation and Heart Rate
+						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){ //Abnormal Rotation and Heart Rate
 							lower.innerHTML = "Rotation";
 							warnHost.innerHTML = "Remain calm";
 							ind.style.backgroundColor = "#c62828";
@@ -403,7 +403,7 @@
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
 						}						}
-						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.25){ //Abnormal Rotation and Heart Rate
+						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){ //Abnormal Rotation and Heart Rate
 							lower.innerHTML = "Rotation";
 							warnHost.innerHTML = "Remain calm";
 							ind.style.backgroundColor = "#c62828";
@@ -446,7 +446,7 @@
 			}
 
 			//Extreme Acc and Abnormal Rotation, sensitive version
-			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.20){
+			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){
 				if (speedcount > 3){
 					lower.innerHTML = "Rotation & Speed";
 					warnHost.innerHTML = "Blink has detected that the vehicle is rotating due to Acceleration, consider slowing down and reducing your turn readius";
