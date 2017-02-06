@@ -225,7 +225,8 @@
     	var temperatureHost = document.getElementById("Temperature");
     	var speedHost = document.getElementById("speed");
     	var warnHost = document.getElementById("warn");
-
+    	var heartavg = 0;
+    	var stdev = 10;
     	var alertHost = document.getElementById("alert");
     	var healthHost = document.getElementById("health");
     	var vehHost = document.getElementById("veh");
@@ -275,9 +276,25 @@
     	var heart_array = [60];
     	var wiper = 0;
 		var myVar = setInterval(period, 1000);
-		var sleep = true;
+		var sleep = "true";
 		var watchLight = 0;
 		var good = false;
+		var watchGyro = [0,0,0];
+		function fireput(){
+			myFirebaseRef.push({
+			  speed: carSpeed,
+			  heartrate: heartrate,
+			  acceleration: vectoracc,
+			  light: light,
+			  proximity: prox,
+			  sleeping: sleep,
+			  gyroscope: gyro,
+			  braking: braking,
+			  heartRateAvg: heartavg,
+			  heartRatestd: stdev,
+			  watchGyro: watchGyro
+			});
+		}
 		function period() {
 			//Too Much Acceleration
 			if (acc_array > 22){
@@ -352,9 +369,9 @@
 			} 
 
 			//Heart Rate Deviation, standard without warning
-			var heartavg = math.mean(heart_array);
+			heartavg = math.mean(heart_array);
 
-			var stdev = math.std(heart_array); //Prevention of early wanrings
+			stdev = math.std(heart_array); //Prevention of early wanrings
 			if (stdev < 10){
 				stdev = 10;
 			}
@@ -473,6 +490,11 @@
 
 			}
 			good = true;
+			console.log(Math.sqrt(watchGyro[0]*watchGyro[0] + watchGyro[1]*watchGyro[1] + watchGyro[2]*watchGyro[2]));
+
+			if ((vectoracc[2] > 25) &  ((Math.sqrt(watchGyro[0]*watchGyro[0] + watchGyro[1]*watchGyro[1] + watchGyro[2]*watchGyro[2])) > 25)){
+				fireput();
+			}
 
 		}
 		var accbar = 0;
@@ -491,6 +513,12 @@
         	watchLight = snapshot.val();
         	console.log(watchLight);
 		});
+
+		myFirebaseRef.child("InformationSet/watchGyro").on("value", function(snapshot) {
+        	watchGyro = snapshot.val();
+        	
+		});
+
 
 
     	var alert = 0;
@@ -668,7 +696,7 @@
         	carAcc = snapshot.val();
 		});
 
-
+		var braking = 0;
 		myFirebaseRef.child("Vehicle/Braking").on("value", function(snapshot) {
         	if (snapshot.val() == 1){
         		document.getElementById("brakeD").innerHTML = "Braking";
@@ -677,6 +705,7 @@
         		document.getElementById("brakeD").innerHTML = "Accelerating";
 				document.getElementById("brake").style.color = "#B0BEC5"
         	}
+        	braking = snapshot.val();
 		});
 
 		myFirebaseRef.child("Vehicle/Roadtype").on("value", function(snapshot) {
