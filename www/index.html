@@ -215,6 +215,7 @@
 
 		</div>
 	</div>
+	<div id="snackbar">Significant G-Force Detected, a Log has Been Created...</div>
 
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
@@ -262,9 +263,13 @@
     	}
 
         app.initialize();
-
-
-        var heartrate = 0;
+		function toast() {
+		    var x = document.getElementById("snackbar")
+		    x.className = "show";
+		    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+		}
+		var flag = 0;
+        var heartrate = 63;
         var light = 0;
         var prox = 0;
         var myFirebaseRef = new Firebase("https://androidwearheartrate.firebaseio.com/");
@@ -280,8 +285,17 @@
 		var watchLight = 0;
 		var good = false;
 		var watchGyro = [0,0,0];
+		var currentdate = new Date(); 
+		var datetime = ""+currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+
 		function fireput(){
 			myFirebaseRef.push({
+			  time: datetime,
 			  speed: carSpeed,
 			  heartrate: heartrate,
 			  acceleration: vectoracc,
@@ -305,22 +319,23 @@
 
 			if (speedcount > 3){
 				lower.innerHTML = "Speed";
-				warnHost.innerHTML = "Blink has detected 2.2Gs of acceleration, consider slowing down!";
+				warnHost.innerHTML = "Blink has detected 2.2Gs of acceleration for " +speedcount + "now, consider slowing down!";
 				ind.style.backgroundColor = "#F9A825";
 				good = false;
 				console.log(good);
 			}
 
+			var rotation = Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]);
 			//Abnormal Rotation
 			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){
 				lower.innerHTML = "Rotation";
-				warnHost.innerHTML = "Please consider a smaller turning rate.";
+				warnHost.innerHTML = "Significant Rotation Detected: " + rotation;
 				ind.style.backgroundColor = "#c62828";
 				good = false;
 			  	$("#indicate").pulse({times: 1, duration: 300});	
 				if (wiper ==1){ //rotation and weather
 					lower.innerHTML = "Rotation";
-					warnHost.innerHTML = "Remain calm";
+					warnHost.innerHTML = "Significant Rotation Detected: " + rotation;
 					ind.style.backgroundColor = "#c62828";
 			  		$("#indicate").pulse({times: 1, duration: 300});
 			  		good = false;
@@ -356,14 +371,14 @@
 			//Temp Extrmemes
 			if ((temp - 4) > 35){
 				lower.innerHTML = "Temperature: High";
-				warnHost.innerHTML = "Consider turning on the cool air, this temperature is not fit for driving";
+				warnHost.innerHTML = "Consider turning on the cool air," + (temp-4)+ " Celsius is too warm for operation";
 				ind.style.backgroundColor = "#F9A825";	
 				good = false;				
 			} 
 
 			if ((temp) < 15){
 				lower.innerHTML = "Temperature: Low";
-				warnHost.innerHTML = "Consider turning on the warm air, this temperature is not fit for driving";
+				warnHost.innerHTML = "Consider turning on the cool air," + temp+ " Celsius is too cold for operation";
 				ind.style.backgroundColor = "#F9A825";		
 				good = false;
 			} 
@@ -383,7 +398,8 @@
 				if (heartrate > heartavg){
 					if ((heartrate - heartavg) > 1.5*stdev){
 							lower.innerHTML = "High Heartrate";
-							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, considering pulling over";
+							var hdev = (heartrate - heartavg)/stdev;
+							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});	
 			  				good = false;
@@ -397,7 +413,7 @@
 			  			}
 						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){ //Abnormal Rotation and Heart Rate
 							lower.innerHTML = "Rotation";
-							warnHost.innerHTML = "Remain calm";
+							warnHost.innerHTML = "Decreasing heartrate, please remain calm";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
@@ -415,7 +431,7 @@
 						warnHost.innerHTML = "Heart Rate too low!";
 						if (vectoracc[2] > 22 ){
 							lower.innerHTML = "Fainting";
-							warnHost.innerHTML = "Slow down! You may faint if these conditions persist";
+							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
@@ -439,16 +455,19 @@
 			}
 
 			//Abnormal Light
-			if ((light < 100) & (watchLight < 50)){
+			if ((light < 90) & (watchLight < 50)){
 				lower.innerHTML = "Brightness: Low";
-				warnHost.innerHTML = "Blink has detected low brightness, its easy to fall asleep with this much light";
+				var avg_bright = (light+watchLight)/2
+				warnHost.innerHTML = "Blink has detected low brightness, with only " +avg_bright +" lux, its easy to fall asleep";
 				ind.style.backgroundColor = "#F9A825";		
 				good = false;				
 			}
 
 			if (light > 4000){
 				lower.innerHTML = "Brightness: Extreme";
-				warnHost.innerHTML = "Blink has detected abnormally high brightness, it can be hard to see, consider lowering your blinks";
+				var avg_bright = (light+watchLight)/2
+
+				warnHost.innerHTML = "Blink has detected extreme brightness, with only " +avg_bright +" lux, its will be hard to see";
 				ind.style.backgroundColor = "#F9A825";	
 				good = false;		
 			}
@@ -480,7 +499,12 @@
 				ind.style.backgroundColor = "#c62828";
   				$("#indicate").pulse({times: 1, duration: 300});	
   				good = false;
+			}else{
+				        		alert +=1;
 			}
+        	
+        	totalalert +=1;
+        	moveProgress(parseInt(100*alert/totalalert), alertHost);
 
 
 			if (good == true){
@@ -492,8 +516,30 @@
 			good = true;
 			console.log(Math.sqrt(watchGyro[0]*watchGyro[0] + watchGyro[1]*watchGyro[1] + watchGyro[2]*watchGyro[2]));
 
-			if ((vectoracc[2] > 25) &  ((Math.sqrt(watchGyro[0]*watchGyro[0] + watchGyro[1]*watchGyro[1] + watchGyro[2]*watchGyro[2])) > 25)){
+			if ( ((Math.sqrt(watchGyro[0]*watchGyro[0] + watchGyro[1]*watchGyro[1] + watchGyro[2]*watchGyro[2])) > 25)){
+				var currentdate = new Date(); 
+				var datetime = "" + currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
 				fireput();
+				toast();
+			}
+			var random = Math.round(Math.random()+0.05);
+			var random2 = Math.round(Math.random()*2);
+
+			if (flag == 0){
+				if (random == 0){
+					heartrate += random2;
+				}else{
+					heartrate -= random2;
+				}
+
+				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
+        		 
+	        	heart_array.push(heartrate);
 			}
 
 		}
@@ -525,11 +571,7 @@
     	var totalalert = 0;
         myFirebaseRef.child("openCV/sleeping").on("value", function(snapshot) {
         	sleep = snapshot.val();
-        	if (sleep == "true"){
-        		alert +=1;
-        	}
-        	totalalert +=1;
-        	moveProgress(parseInt(100*alert/totalalert), alertHost);
+
 
 		});
 
@@ -549,21 +591,20 @@
 		var totalokay = 0;
 
         myFirebaseRef.child("InformationSet/heartProxLight").on("value", function(snapshot) {
-        	heartrate = parseInt(snapshot.val()[0]);
         	temp = parseInt(snapshot.val()[3]);
         	prox = parseInt(snapshot.val()[1]);
         	light = snapshot.val()[2];
         	lightHost.innerHTML = "Preceived Brightness: " + light + " Lux";
         	temperatureHost.innerHTML = "Ambient Temperature: " + temp + " C"
 
-        	if (heartrate > 0){
+        	if (parseInt(snapshot.val()[0]) > 0){
+	        	heartrate = parseInt(snapshot.val()[0]);
   				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
 	        	heart_array.push(heartrate);
+	        	flag = 1;
 
   			}else{
-        		heartrate = Math.floor((Math.random() * 30) + 50);
-	        	heart_array.push(heartrate);
-  				heartHost.innerHTML = "Your Heart Rate: " + heartrate + " BPM"; 
+  				flag = 0;
   			}
 
   			if (heartrate > 120){
