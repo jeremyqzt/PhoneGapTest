@@ -309,7 +309,41 @@
 			  watchGyro: watchGyro
 			});
 		}
+		var five = 0;
+		var length = 0;
+		var age = 22;
+		var gender = "Undefined";
+		var care = "None";
+		var mono = false;
+		var monodec = false;
+		var status = 1; // 0 Alert, 1 top, 2 bottom, 3 else
+		var multiplier = 1;
+		var genderdev = 0;
+
 		function period() {
+			//Gravity Vectoring
+			if (gender = "Female"){
+				genderdev = 10;
+			}
+
+			five +=1;
+			if (five == 5){ //Check the Vector //per 5 seconds vectoring
+				five =0;
+				if ((watchGyro[2] > 0) & (watchGyro[2] < 8)){ //10 and 2 position
+					status = 0;
+				}else if (watchGyro[2] >= 8){
+					status = 1; //top leaning
+				}else if (watchGyro[2] < 0 ){
+					status = 2;
+				}else{
+					status = 3;
+				}
+
+			}
+
+			//Turning Radius
+
+
 			//Too Much Acceleration
 			if (acc_array > 22){
 				speedcount+=1;
@@ -317,25 +351,26 @@
 				speedcount = 0;
 			}
 
-			if (speedcount > 3){
+			if ((speedcount > 3) & (status !=1)){ //Remove Alert if driver is alert
 				lower.innerHTML = "Speed";
-				warnHost.innerHTML = "Blink has detected 2.2Gs of acceleration for " +speedcount + "now, consider slowing down!";
+				warnHost.innerHTML = "Blink has detected " + Math.round( 10*(acc_array/10))/10 + " Gs of acceleration for " +speedcount + " seconds now, consider slowing down!";
 				ind.style.backgroundColor = "#F9A825";
 				good = false;
-				console.log(good);
 			}
 
 			var rotation = Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]);
 			//Abnormal Rotation
-			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){
-				lower.innerHTML = "Rotation";
-				warnHost.innerHTML = "Significant Rotation Detected: " + rotation;
-				ind.style.backgroundColor = "#c62828";
-				good = false;
+			if (rotation > 0.40){
+				if (rotation > 0.50){
+					lower.innerHTML = "Rotation";
+					warnHost.innerHTML = "Significant Rotation Detected: " + rotation;
+					ind.style.backgroundColor = "#c62828";
+					good = false;
+				}
 			  	$("#indicate").pulse({times: 1, duration: 300});	
 				if (wiper ==1){ //rotation and weather
 					lower.innerHTML = "Rotation";
-					warnHost.innerHTML = "Significant Rotation Detected: " + rotation;
+					warnHost.innerHTML = "Weather Rotation Vector: " + rotation;
 					ind.style.backgroundColor = "#c62828";
 			  		$("#indicate").pulse({times: 1, duration: 300});
 			  		good = false;
@@ -349,7 +384,7 @@
 				acccount =0;
 			}
 
-			if(acccount > 3){ //prolonged non linear
+			if(acccount > 3){ //prolonged non linear, Roundabouts
 				warnHost.innerHTML = "Movement is Constantly Non Linear!";
 				if (vectoracc[2] > 22){//Extreme and non linear
 					lower.innerHTML = "Extreme Acceleration";
@@ -357,7 +392,6 @@
 					ind.style.backgroundColor = "#c62828";
 			  		$("#indicate").pulse({times: 1, duration: 300});	
 			  		good = false;
-
 			  	}
 				if (wiper == 1){
 					lower.innerHTML = "Weather";
@@ -387,14 +421,43 @@
 			heartavg = math.mean(heart_array);
 
 			stdev = math.std(heart_array); //Prevention of early wanrings
+
 			if (stdev < 10){
 				stdev = 10;
 			}
+			stdev *= multiplier;
 
 			// console.log("hr"+heartrate);
 			// console.log("avg"+heartavg);
 			// console.log("stdev"+stdev);
-			if ((heartrate < 140) & (heartrate > 40)){ //Sanitization of inputs
+			//Trend Checking
+			length = heart_array.length;
+			var loop;
+			loop = length - 1;
+			if (length > 7){
+				if((heart_array[loop] > heart_array[loop -1 ]) & (heart_array[loop-1] > heart_array[loop -2 ]) & (heart_array[loop-2] > heart_array[loop -3 ]) & (heart_array[loop-3] > heart_array[loop -4 ]) &(heart_array[loop-4] > heart_array[loop -5 ])){
+					mono = true; // monotonically increasing
+				}else{
+					mono = false
+				}
+
+
+				if((heart_array[loop] < heart_array[loop -1 ]) & (heart_array[loop-1] < heart_array[loop -2 ]) & (heart_array[loop-2] < heart_array[loop -3 ]) & (heart_array[loop-3] < heart_array[loop -4 ]) &(heart_array[loop-4] < heart_array[loop -5 ])){
+					monodec = true; // monotonically increasing
+				}else{
+					monodec = false
+				}
+			}
+
+
+			//Monotonaticity of Input, Easy to see something wrong, ignores status
+
+
+			//Fluctuation Accounting, trending high, accounts status
+
+
+			//Fluctuation Accounting, trending low, accounts status
+			if ((heartrate < (180 + genderdev)) & (heartrate > (40+genderdev))){ //Sanitization of inputs
 				if (heartrate > heartavg){
 					if ((heartrate - heartavg) > 1.5*stdev){
 							lower.innerHTML = "High Heartrate";
@@ -411,9 +474,9 @@
 							good = false;
 			  				$("#indicate").pulse({times: 1, duration: 300});	
 			  			}
-						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){ //Abnormal Rotation and Heart Rate
-							lower.innerHTML = "Rotation";
-							warnHost.innerHTML = "Decreasing heartrate, please remain calm";
+						if (mono){ //Abnormal Rotation and Heart Rate
+							lower.innerHTML = "Turn Radius";
+							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
@@ -428,7 +491,6 @@
 					}
 				}else{
 					if ((heartavg - heartrate) > 1.5*stdev){
-						warnHost.innerHTML = "Heart Rate too low!";
 						if (vectoracc[2] > 22 ){
 							lower.innerHTML = "Fainting";
 							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
@@ -436,9 +498,16 @@
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
 						}						}
-						if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){ //Abnormal Rotation and Heart Rate
+						if (rotation > 0.45){ //Abnormal Rotation and Heart Rate
+							lower.innerHTML = "Turn Radius";
+							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
+							ind.style.backgroundColor = "#c62828";
+			  				$("#indicate").pulse({times: 1, duration: 300});
+			  				good = false;
+			  			}
+			  			if (monodec){ //Abnormal Rotation and Heart Rate
 							lower.innerHTML = "Rotation";
-							warnHost.innerHTML = "Remain calm";
+							warnHost.innerHTML = "Decreasing heartrate, please pull over and call for help!";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
 			  				good = false;
@@ -455,7 +524,7 @@
 			}
 
 			//Abnormal Light
-			if ((light < 90) & (watchLight < 50)){
+			if ((light < 50)||(watchLight < 50) || ((status != 1) & (sleep == "true"))){ //Driving Override
 				lower.innerHTML = "Brightness: Low";
 				var avg_bright = (light+watchLight)/2
 				warnHost.innerHTML = "Blink has detected low brightness, with only " +avg_bright +" lux, its easy to fall asleep";
@@ -463,7 +532,7 @@
 				good = false;				
 			}
 
-			if (light > 4000){
+			if (light > 4000){ //UNlikely to occur
 				lower.innerHTML = "Brightness: Extreme";
 				var avg_bright = (light+watchLight)/2
 
@@ -473,7 +542,7 @@
 			}
 
 			//proximity
-			if ((prox < 3) & (carSpeed > 10)){
+			if ((prox < 3) & (carSpeed > 10) & (status != 1)){
 				lower.innerHTML = "Operation";
 				warnHost.innerHTML = "Please do not operating while driving";
 				ind.style.backgroundColor = "#F9A825";
@@ -482,7 +551,7 @@
 			}
 
 			//Extreme Acc and Abnormal Rotation, sensitive version
-			if (Math.sqrt(gyro[0]*gyro[0]+gyro[1]*gyro[1]+gyro[2]*gyro[2]) > 0.45){
+			if (rotation > 0.5){
 				if (speedcount > 3){
 					lower.innerHTML = "Rotation & Speed";
 					warnHost.innerHTML = "Blink has detected that the vehicle is rotating due to Acceleration, consider slowing down and reducing your turn readius";
@@ -527,8 +596,15 @@
 				fireput();
 				toast();
 			}
-			var random = Math.round(Math.random()+0.05);
-			var random2 = Math.round(Math.random()*2);
+			var random = Math.round(Math.random()-0.01);
+			var random2 = Math.round(Math.random()*10);
+			if (random2 == 1){
+				random2 = 2;
+			}else if (random2 ==2){
+				random2 = 3;
+			}else{
+				random2 = 0;
+			}
 
 			if (flag == 0){
 				if (random == 0){
@@ -737,6 +813,23 @@
         	carAcc = snapshot.val();
 		});
 
+		myFirebaseRef.child("Person/Age").on("value", function(snapshot) {
+        	age = snapshot.val();
+        	if (age > 80){
+        		age = 80;
+        	}
+			multiplier =0.8+(0.2*((80-age)/58));
+
+		});
+
+		myFirebaseRef.child("Person/Gender").on("value", function(snapshot) {
+        	gender = snapshot.val();
+		});
+
+
+		myFirebaseRef.child("Person/Care").on("value", function(snapshot) {
+        	care = snapshot.val();
+		});
 		var braking = 0;
 		myFirebaseRef.child("Vehicle/Braking").on("value", function(snapshot) {
         	if (snapshot.val() == 1){
