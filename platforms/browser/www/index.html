@@ -104,7 +104,7 @@
     	<br>
 		<h2>Vehicle</h2> 
 
-	  <div class="w3-progress-container w3-blue">
+	  <div class="w3-progress-container">
 	    <div id = "veh" class="w3-progressbar w3-blue" style="width:75%"><h5>Operation</h5></div>
 	  </div>
     	<p> Blink measures your driving with inputs from your car as well as your driving history, if you stray too often from regular limits, this value will decrease. Should you get into a accident, Blink will be there to log your data.
@@ -370,7 +370,7 @@
 			  	$("#indicate").pulse({times: 1, duration: 300});	
 				if (wiper ==1){ //rotation and weather
 					lower.innerHTML = "Rotation";
-					warnHost.innerHTML = "Weather Rotation Vector: " + rotation;
+					warnHost.innerHTML = "High Rotation Vector: " + rotation;
 					ind.style.backgroundColor = "#c62828";
 			  		$("#indicate").pulse({times: 1, duration: 300});
 			  		good = false;
@@ -462,6 +462,7 @@
 					if ((heartrate - heartavg) > 1.5*stdev){
 							lower.innerHTML = "High Heartrate";
 							var hdev = (heartrate - heartavg)/stdev;
+							hdev = Math.round( hdev* 10) / 10;
 							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});	
@@ -475,7 +476,7 @@
 			  				$("#indicate").pulse({times: 1, duration: 300});	
 			  			}
 						if (mono){ //Abnormal Rotation and Heart Rate
-							lower.innerHTML = "Turn Radius";
+							lower.innerHTML = "Heart Rate";
 							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
@@ -499,7 +500,7 @@
 			  				good = false;
 						}						}
 						if (rotation > 0.45){ //Abnormal Rotation and Heart Rate
-							lower.innerHTML = "Turn Radius";
+							lower.innerHTML = "Heart Rate";
 							warnHost.innerHTML = "Blink has detected abnormal heart rate readings, over " +hdev+" past your normal range, considering pulling over";
 							ind.style.backgroundColor = "#c62828";
 			  				$("#indicate").pulse({times: 1, duration: 300});
@@ -524,7 +525,7 @@
 			}
 
 			//Abnormal Light
-			if ((light < 50)||(watchLight < 50) || ((status != 1) & (sleep == "true"))){ //Driving Override
+			if (((light < 50)&(watchLight < 50)) || ((status != 1) & (sleep == "false"))){ //Driving Override
 				lower.innerHTML = "Brightness: Low";
 				var avg_bright = (light+watchLight)/2
 				warnHost.innerHTML = "Blink has detected low brightness, with only " +avg_bright +" lux, its easy to fall asleep";
@@ -621,14 +622,15 @@
 		}
 		var accbar = 0;
 		var accbar_total = 0;
+		var per = 0;
         myFirebaseRef.child("Vehicle/Acceleration").on("value", function(snapshot) {
         	acc_array = snapshot.val();
         	accbar_total +=1;
-        	if (accbar < 22){
+        	if (acc_array < 15){
         		accbar +=1;
         	}
-        	moveProgress(parseInt(100*accbar/accbar_total), vehHost);
-
+        	per = parseInt(100*accbar/accbar_total);
+        	moveProgress(per, vehHost);
 		});
 
 		myFirebaseRef.child("InformationSet/watchLight").on("value", function(snapshot) {
