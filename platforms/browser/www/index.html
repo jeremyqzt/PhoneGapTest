@@ -351,7 +351,7 @@
 				speedcount = 0;
 			}
 
-			if ((speedcount > 3) & (status !=1)){ //Remove Alert if driver is alert
+			if ((speedcount > 3) & (status !=0)){ //Remove Alert if driver is alert
 				lower.innerHTML = "Speed";
 				warnHost.innerHTML = "Blink has detected " + Math.round( 10*(acc_array/10))/10 + " Gs of acceleration for " +speedcount + " seconds now, consider slowing down!";
 				ind.style.backgroundColor = "#F9A825";
@@ -525,7 +525,7 @@
 			}
 
 			//Abnormal Light
-			if (((light < 50)&(watchLight < 50)) || ((status != 1) & (sleep == "false"))){ //Driving Override
+			if (((light < 50)&(watchLight < 50)) || ((status != 0) & (sleep == "false"))){ //Driving Override
 				lower.innerHTML = "Brightness: Low";
 				var avg_bright = (light+watchLight)/2
 				warnHost.innerHTML = "Blink has detected low brightness, with only " +avg_bright +" lux, its easy to fall asleep";
@@ -543,7 +543,7 @@
 			}
 
 			//proximity
-			if ((prox < 3) & (carSpeed > 10) & (status != 1)){
+			if ((prox < 3) & (carSpeed > 10) & (status != 0)){
 				lower.innerHTML = "Operation";
 				warnHost.innerHTML = "Please do not operating while driving";
 				ind.style.backgroundColor = "#F9A825";
